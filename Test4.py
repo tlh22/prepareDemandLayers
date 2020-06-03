@@ -20,16 +20,48 @@
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtCore import *
+"""from PyQt4.QtCore import *
 from PyQt4.QtGui import *
+from PyQt4.QtSql import QSqlDatabase
 from qgis.core import *
 # Initialize Qt resources from file resources.py
-import resources
-# Import the code for the dialog
-from Test4_dialog import Test4Dialog
-import os.path
-from PyQt4.QtSql import QSqlDatabase
+import resources"""
+
+
+#from PyQt5.QtCore import QSettings, QTranslator, qVersion, QCoreApplication
+from qgis.PyQt.QtGui import QIcon
+from qgis.PyQt.QtWidgets import QAction, QMessageBox, QFileDialog
+from qgis.PyQt.QtSql import QSqlDatabase
+from qgis.PyQt.QtCore import (
+    QObject,
+    QTimer,
+    pyqtSignal,
+    QSettings, QTranslator, qVersion, QCoreApplication
+)
+
+from qgis.core import (
+    QgsExpressionContextUtils,
+    QgsExpression,
+    QgsFeatureRequest,
+    QgsMessageLog, QgsFeature, QgsGeometry,
+    QgsTransaction, QgsTransactionGroup,
+    QgsProject,
+    QgsVectorFileWriter,
+    QgsApplication,
+    QgsVectorLayer,
+    QgsFields, QgsDataSourceUri, QgsWkbTypes,
+    QgsMapLayer
+)
+
+from qgis.gui import QgsFileWidget, QgsMapLayerComboBox
+
+# Initialize Qt resources from file resources.py
+#from .resources import *
 import sys, traceback
+
+# Import the code for the dialog
+from prepareDemandLayers.Test4_dialog import Test4Dialog
+import os.path
 
 class Test4:
     """QGIS Plugin Implementation."""
@@ -47,7 +79,7 @@ class Test4:
         # initialize plugin directory
         self.plugin_dir = os.path.dirname(__file__)
         # initialize locale
-        locale = QSettings().value('locale/userLocale')[0:2]
+        """locale = QSettings().value('locale/userLocale')[0:2]
         locale_path = os.path.join(
             self.plugin_dir,
             'i18n',
@@ -58,7 +90,7 @@ class Test4:
             self.translator.load(locale_path)
 
             if qVersion() > '4.3.3':
-                QCoreApplication.installTranslator(self.translator)
+                QCoreApplication.installTranslator(self.translator)"""
 
         # Create the dialog (after translation) and keep reference
         self.dlg = Test4Dialog()
@@ -221,7 +253,7 @@ class Test4:
         # show the dialog
         self.dlg.show()
 
-        layers = QgsMapLayerRegistry.instance().mapLayers().values()
+        layers = QgsProject.instance().mapLayers().values()
         for layer in layers:
             if layer.type() == QgsMapLayer.VectorLayer:
                 self.dlg.layerSurveys.addItem( layer.name(), layer ) 
@@ -242,15 +274,15 @@ class Test4:
             crs = layerSupply.crs()
 
             # Set up indexes
-            idxSurveyID = layerSurveys.fieldNameIndex('SurveyID')
-            idxSurveyTime = layerSurveys.fieldNameIndex('SurveyTimePeriod')
-            idxSurveyDay = layerSurveys.fieldNameIndex('SurveyDay')
+            idxSurveyID = layerSurveys.fields().indexFromName('SurveyID')
+            idxSurveyTime = layerSurveys.fields().indexFromName('SurveyTimePeriod')
+            idxSurveyDay = layerSurveys.fields().indexFromName('SurveyDay')
 
-            idxSupplySurveyID = layerSupply.fieldNameIndex('SurveyID')
-            idxSupplySurveyDay = layerSupply.fieldNameIndex('SurveyDay')
-            idxSupplySurveyTime = layerSupply.fieldNameIndex('SurveyTime')
+            idxSupplySurveyID = layerSupply.fields().indexFromName('SurveyID')
+            idxSupplySurveyDay = layerSupply.fields().indexFromName('SurveyDay')
+            idxSupplySurveyTime = layerSupply.fields().indexFromName('SurveyTime')
 
-            idxSupplyGeometry = layerSupply.fieldNameIndex('geom')
+            idxSupplyGeometry = layerSupply.fields().indexFromName('geom')
 
             dirname = self.dlg.lineEdit.text()
             dBname = self.dlg.lineEditDB.text()
@@ -267,7 +299,7 @@ class Test4:
 
             if len(dBname)>0:
                 # set up database links, etc
-                uri = QgsDataSourceURI()
+                uri = QgsDataSourceUri()
                 uri.setDatabase(dBname)
                 schema = ''
                 db = QSqlDatabase.addDatabase("QSQLITE")
@@ -281,7 +313,7 @@ class Test4:
                 attr = layerSupply.fields().toList()
 
             featureSet = layerSurveys.getFeatures()
-            idx = layerSurveys.fieldNameIndex('SurveyID')
+            idx = layerSurveys.fields().indexFromName('SurveyID')
 
             for feature in sorted(featureSet, key=lambda f: f[idx], reverse=True):
                 #for feature in layerSurveys.getFeatures():
@@ -309,15 +341,56 @@ class Test4:
 
                     QgsMessageLog.logMessage("Shape file choosen ...", tag="TOMs panel")
 
-                    writer = QgsVectorFileWriter.writeAsVectorFormat(layerSupply,filePath,"utf-8",None,"ESRI Shapefile")
-                    vlayer = QgsVectorLayer(filePath + ".shp", layerName, "ogr")
-                    QgsMapLayerRegistry.instance().addMapLayer(vlayer)
+                    save_options = QgsVectorFileWriter.SaveVectorOptions()
+                    save_options.driverName = "ESRI Shapefile"
+                    save_options.fileEncoding = "UTF-8"
+                    transform_context = QgsProject.instance().transformContext()
+                    error = QgsVectorFileWriter.writeAsVectorFormatV2(layer,
+                                                                      filePath,
+                                                                      transform_context,
+                                                                      save_options)
+                    if error[0] == QgsVectorFileWriter.NoError:
+                        print("success again!")
+                    else:
+                        print(error)
 
-                    vlayer.startEditing()
+
+                    """proj_crs = QgsProject().instance().crs()
+                    fields = layerSupply.fields()
+                    writer = QgsVectorFileWriter(filePath,
+                                                 "utf-8",
+                                                 fields,
+                                                 QgsWkbTypes.LineString,  #### instead of QGis.WKBPoint
+                                                 proj_crs,  #### instead of None
+                                                 "ESRI Shapefile")
+
+                    for feat in layerSupply.getFeatures():
+                        writer.addFeature(feat)
+
+                    vlayer = self.iface.addVectorlayer(filePath + ".shp", layerName, "ogr")
+                    #QgsProject.instance().addMapLayer(vlayer)
+
+                    del (writer)"""
+
+                    vlayer = QgsVectorLayer(filePath + ".shp", layerName, "ogr")
+                    QgsProject.instance().instance().addMapLayer(vlayer)
+
+
+                    if not vlayer.startEditing():
+                        QgsMessageLog.logMessage(
+                            "Error starting edit session on {} ...".format(filePath), tag="TOMs panel")
+                        return False
+
                     for feat in vlayer.getFeatures():
-                        vlayer.changeAttributeValue(feat.id(), idxSupplySurveyID, surveyID)
-                        vlayer.changeAttributeValue(feat.id(), idxSupplySurveyDay, surveyDay)
-                        vlayer.changeAttributeValue(feat.id(), idxSupplySurveyTime, surveyTime)
+                        if not vlayer.changeAttributeValue(feat.id(), idxSupplySurveyID, surveyID):
+                            QgsMessageLog.logMessage("Error changing field idxSupplySurveyID {}...".format(idxSupplySurveyID), tag="TOMs panel")
+                            break
+                        if not vlayer.changeAttributeValue(feat.id(), idxSupplySurveyDay, surveyDay):
+                            QgsMessageLog.logMessage("Error changing field idxSupplySurveyDay {}...".format(idxSupplySurveyDay), tag="TOMs panel")
+                            break
+                        if not vlayer.changeAttributeValue(feat.id(), idxSupplySurveyTime, surveyTime):
+                            QgsMessageLog.logMessage("Error changing field idxSupplySurveyTime {}...".format(idxSupplySurveyTime), tag="TOMs panel")
+                            break
 
                     vlayer.commitChanges()
 

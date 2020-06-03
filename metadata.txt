@@ -8,7 +8,7 @@
 
 [general]
 name=Test4
-qgisMinimumVersion=2.0
+qgisMinimumVersion=3.0
 description=test4
 version=0.1
 author=TH
