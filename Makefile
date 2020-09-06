@@ -1,5 +1,5 @@
 #/***************************************************************************
-# Test4
+# prepareDemandLayers
 #
 # test4
 #							 -------------------
@@ -38,13 +38,13 @@ LOCALES =
 # translation
 SOURCES = \
 	__init__.py \
-	Test4.py Test4_dialog.py
+	prepareDemandLayers.py Test4_dialog.py
 
-PLUGINNAME = Test4
+PLUGINNAME = prepareDemandLayers
 
 PY_FILES = \
 	__init__.py \
-	Test4.py Test4_dialog.py
+	prepareDemandLayers.py Test4_dialog.py
 
 UI_FILES = Test4_dialog_base.ui
 

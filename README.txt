@@ -1,7 +1,7 @@
 Plugin Builder Results
 
-Your plugin Test4 was created in:
-    C:\Users\marie_000\.qgis2\python\plugins\Test4
+Your plugin prepareDemandLayers was created in:
+    C:\Users\marie_000\.qgis2\python\plugins\prepareDemandLayers
 
 Your QGIS plugin directory is located at:
     C:/Users/marie_000/.qgis2/python/plugins
@@ -17,11 +17,11 @@ What's Next:
 
   * Test the plugin by enabling it in the QGIS plugin manager
 
-  * Customize it by editing the implementation file: ``Test4.py``
+  * Customize it by editing the implementation file: ``prepareDemandLayers.py``
 
   * Create your own custom icon, replacing the default icon.png
 
-  * Modify your user interface by opening Test4.ui in Qt Designer
+  * Modify your user interface by opening prepareDemandLayers.ui in Qt Designer
 
   * You can use the Makefile to compile your Ui and resource files when
     you make changes. This requires GNU make (gmake)

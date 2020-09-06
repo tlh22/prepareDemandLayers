@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 /***************************************************************************
- Test4
+ prepareDemandLayers
                                  A QGIS plugin
  test4
                              -------------------
@@ -25,11 +25,11 @@
 
 # noinspection PyPep8Naming
 def classFactory(iface):  # pylint: disable=invalid-name
-    """Load Test4 class from file Test4.
+    """Load prepareDemandLayers class from file prepareDemandLayers.
 
     :param iface: A QGIS interface instance.
     :type iface: QgsInterface
     """
     #
-    from .Test4 import Test4
-    return Test4(iface)
+    from .prepareDemandLayers import prepareDemandLayers
+    return prepareDemandLayers(iface)

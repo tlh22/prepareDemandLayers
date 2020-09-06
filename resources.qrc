@@ -1,5 +1,5 @@
 <RCC>
-    <qresource prefix="/plugins/Test4" >
+    <qresource prefix="/plugins/prepareDemandLayers" >
         <file>icon.png</file>
     </qresource>
 </RCC>
