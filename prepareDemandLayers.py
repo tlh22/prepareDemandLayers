@@ -262,12 +262,13 @@ class prepareDemandLayers:
 
             # Set up indexes
             idxSurveyID = layerSurveys.fields().indexFromName('SurveyID')
-            idxSurveyTime = layerSurveys.fields().indexFromName('SurveyTimePeriod')
-            idxSurveyDay = layerSurveys.fields().indexFromName('SurveyDay')
+            #idxSurveyTime = layerSurveys.fields().indexFromName('SurveyTimePeriod')
+            #idxSurveyDay = layerSurveys.fields().indexFromName('SurveyDay')
+            idxSurveyBeat = layerSurveys.fields().indexFromName('BeatTitle')
 
             idxSupplySurveyID = layerSupply.fields().indexFromName('SurveyID')
-            idxSupplySurveyDay = layerSupply.fields().indexFromName('SurveyDay')
-            idxSupplySurveyTime = layerSupply.fields().indexFromName('SurveyTime')
+            #idxSupplySurveyDay = layerSupply.fields().indexFromName('SurveyDay')
+            #idxSupplySurveyTime = layerSupply.fields().indexFromName('SurveyTime')
 
             idxSupplyGeometry = layerSupply.fields().indexFromName('geom')
 
@@ -302,15 +303,18 @@ class prepareDemandLayers:
                 #for feature in layerSurveys.getFeatures():
 
                 surveyID = feature.attributes()[idxSurveyID]
-                surveyTime = feature.attributes()[idxSurveyTime]
-                surveyDay = feature.attributes()[idxSurveyDay]
+                #surveyTime = feature.attributes()[idxSurveyTime]
+                #surveyDay = feature.attributes()[idxSurveyDay]
+                surveyBeat = feature.attributes()[idxSurveyBeat]
                 #QMessageBox.information(self.iface.mainWindow(),"Survey ID","%s at %s." %(surveyID,surveyTime))
 
                 feats = [feat for feat in layerSupply.getFeatures()]
 
                 # Now create a new layer of DemandInformation
                 #layerName = "Demand_%s_%s_%s" %(surveyID, surveyDay, surveyTime)
-                layerName = 'Demand_{id:02d}_{day}_{time}'.format(id=int(surveyID), day=surveyDay, time=surveyTime)
+                #layerName = 'Demand_{id:02d}_{day}_{time}'.format(id=int(surveyID), day=surveyDay, time=surveyTime)
+                layerName = 'Demand_{beat}'.format(beat=surveyBeat)
+
 
                 QgsMessageLog.logMessage("Demand layer ..." + str(layerName), tag="TOMs panel")
 
@@ -318,7 +322,7 @@ class prepareDemandLayers:
 
                 #QMessageBox.information(self.iface.mainWindow(),"UIname: ","%s" %(UIname))
 
-                newDemandLayer, newDemandLayerName = self.prepareNewDemandLayer(layerSupply, surveyID, surveyDay, surveyTime)
+                newDemandLayer, newDemandLayerName = self.prepareNewDemandLayer(layerSupply, surveyID, layerName)
                 # Create shape file
 
                 if createShapeFiles:
@@ -417,9 +421,9 @@ class prepareDemandLayers:
                 
                 # update SurveyID and Time in Supply table
 
-    def prepareNewDemandLayer(self, supplyLayer, surveyID, surveyDay, surveyTime):
+    def prepareNewDemandLayer(self, supplyLayer, surveyID, layerName):
 
-        newDemandLayerName = 'Demand_{id:02d}_{day}_{time}'.format(id=int(surveyID), day=surveyDay, time=surveyTime)
+        newDemandLayerName = layerName
         QgsMessageLog.logMessage("prepareNewDemandLayer: creating " + str(newDemandLayerName), tag="TOMs panel")
 
         #currCrs = supplyLayer.crs().toWkt()
@@ -434,16 +438,16 @@ class prepareDemandLayers:
         QgsMessageLog.logMessage("prepareNewDemandLayer: nr supply features: " + str(supplyLayer.featureCount()), tag="TOMs panel")
 
         idxSupplySurveyID = supplyLayer.fields().indexFromName('SurveyID')
-        idxSupplySurveyDay = supplyLayer.fields().indexFromName('SurveyDay')
-        idxSupplySurveyTime = supplyLayer.fields().indexFromName('SurveyTime')
+        #idxSupplySurveyDay = supplyLayer.fields().indexFromName('SurveyDay')
+        #idxSupplySurveyTime = supplyLayer.fields().indexFromName('SurveyTime')
 
         newDemandLayer.startEditing()
 
         for feature in newDemandLayer.getFeatures():
 
             newDemandLayer.changeAttributeValue(feature.id(), idxSupplySurveyID, surveyID)
-            newDemandLayer.changeAttributeValue(feature.id(), idxSupplySurveyDay, surveyDay)
-            newDemandLayer.changeAttributeValue(feature.id(), idxSupplySurveyTime, surveyTime)
+            #newDemandLayer.changeAttributeValue(feature.id(), idxSupplySurveyDay, surveyDay)
+            #newDemandLayer.changeAttributeValue(feature.id(), idxSupplySurveyTime, surveyTime)
 
         newDemandLayer.commitChanges()
 
